@@ -2,7 +2,7 @@
 
 ## Windows desktop release checks — 2026-11-15
 
-- 213 offline tests passed, with the paid live test deselected.
+- 214 offline tests passed, with the paid live test deselected.
 - Lint, formatting, and dependency checks passed.
 - Both the frozen portable executable and installed executable launched with
   Python absent from the child process PATH, using the bundled interpreter.

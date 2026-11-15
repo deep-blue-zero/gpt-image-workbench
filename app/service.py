@@ -394,6 +394,10 @@ class Workbench:
             self.closing = True
         self.cancel()
         self.executor.shutdown(wait=True, cancel_futures=False)
+        # Batch downloads/imports run in Gradio callback workers, outside this executor.
+        # Let an already active import finish persisting before the desktop process exits.
+        with self.batches.lock:
+            pass
 
     def change_credentials(self, key: str | None, remember: bool = False) -> None:
         with self.lock, self.batches.lock:

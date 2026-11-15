@@ -98,6 +98,34 @@ def test_shutdown_waits_for_worker_to_save(config):
     assert saved.read_text() == "saved" and not shutdown.is_alive()
 
 
+def test_shutdown_waits_for_batch_import_and_rejects_new_api_operations(config):
+    workbench = Workbench(config)
+    started, release = threading.Event(), threading.Event()
+    saved = config.data_dir / "batch-import-saved.txt"
+
+    def importing():
+        with workbench.batches.lock:
+            started.set()
+            release.wait(5)
+            saved.write_text("saved")
+
+    importer = threading.Thread(target=importing)
+    importer.start()
+    assert started.wait(5)
+    shutdown = threading.Thread(target=workbench.close)
+    shutdown.start()
+    try:
+        shutdown.join(0.1)
+        assert shutdown.is_alive() and workbench.closing
+        with pytest.raises(ValueError, match="shutting down"):
+            workbench.batches._api()
+    finally:
+        release.set()
+        importer.join(5)
+        shutdown.join(5)
+    assert saved.read_text() == "saved" and not shutdown.is_alive()
+
+
 @pytest.mark.skipif(sys.platform != "win32", reason="Windows graphical launcher")
 def test_graphical_launcher_starts_and_quits_without_browser(config, monkeypatch):
     from app.desktop_launcher import Launcher

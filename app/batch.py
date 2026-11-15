@@ -33,6 +33,8 @@ class BatchService:
         self.lock = threading.RLock()
 
     def _api(self):
+        if self.wb.closing:
+            raise ValueError("Workbench is shutting down. No new Batch API operations can start.")
         if not self.wb.config.api_key:
             raise ValueError(
                 "No Batch API request was sent. Connect an API key using Connect OpenAI above. "
