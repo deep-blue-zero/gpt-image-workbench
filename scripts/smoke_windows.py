@@ -50,7 +50,11 @@ def main():
             portable_report,
         )
         portable_result = json.loads(portable_report.read_text())
-        assert Path(portable_result["data_dir"]) == portable_root / "data"
+        # Windows TEMP can use an 8.3 alias while the application resolves its full path.
+        # Compare the actual directory, not two different spellings of the same location.
+        assert Path(portable_result["data_dir"]).samefile(portable_root / "data"), (
+            f"Portable library {portable_result['data_dir']} is not {portable_root / 'data'}"
+        )
         assert portable_result["frozen"] and portable_result["api_access"] is False
 
         install_root = scratch / "Installed app"
@@ -74,7 +78,10 @@ def main():
             )
             result = json.loads(installed_report.read_text())
             library = scratch / "profile/GPT Image Workbench/data"
-            assert Path(result["data_dir"]) == library and result["frozen"]
+            assert Path(result["data_dir"]).samefile(library), (
+                f"Installed library {result['data_dir']} is not {library}"
+            )
+            assert result["frozen"]
             assert not (install_root / "data").exists()
             marker = library / "upgrade-preservation.txt"
             marker.write_text("keep my library", "utf-8")
