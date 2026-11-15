@@ -9,6 +9,9 @@ from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 
+from app.credentials import Credentials
+from app.paths import application_root, default_data_dir
+
 PACKAGE_DIR = Path(__file__).resolve().parent
 
 
@@ -36,18 +39,21 @@ class Settings:
 
 class Config:
     def __init__(self, root: Path | None = None, data_dir: Path | None = None, *, demo: bool = False):
-        self.root = (root or Path.cwd()).resolve()
+        self.root = (root or application_root()).resolve()
         load_dotenv(self.root / ".env", override=False)
-        self.data_dir = (data_dir or Path(os.getenv("WORKBENCH_DATA_DIR", str(self.root / "data")))).resolve()
+        self.data_dir = (
+            data_dir or Path(os.getenv("WORKBENCH_DATA_DIR", str(default_data_dir(self.root))))
+        ).resolve()
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.demo = demo
+        self.credentials = Credentials(self.data_dir)
         self.timezone = ZoneInfo(os.getenv("WORKBENCH_TIMEZONE", "America/New_York"))
         self.settings_path = self.data_dir / "settings.json"
         self.settings = self.load_settings()
 
     @property
     def api_key(self) -> str | None:
-        return None if self.demo else (os.getenv("OPENAI_API_KEY", "").strip() or None)
+        return None if self.demo else self.credentials.key
 
     def registry_path(self, name: str) -> Path:
         custom = self.root / "config" / f"{name}.json"

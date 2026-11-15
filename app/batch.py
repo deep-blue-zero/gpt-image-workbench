@@ -35,7 +35,8 @@ class BatchService:
     def _api(self):
         if not self.wb.config.api_key:
             raise ValueError(
-                "Demo mode: no Batch API request was sent. Configure an API key and restart in normal mode."
+                "No Batch API request was sent. Connect an API key using Connect OpenAI above. "
+                "If launched with --demo, restart in normal mode first."
             )
         return self.api_factory(self.wb.config.api_key, self.wb.config.settings)
 

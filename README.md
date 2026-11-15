@@ -32,7 +32,30 @@ personal prompts, or usage database are included in this repository.
 - **Work offline:** explore all tabs and create a labeled inspection sample without
   an API key. Paid requests require a preview and explicit confirmation.
 
-## Quick start on Windows
+## Install on Windows
+
+Download the **Windows x64 installer** from [Releases](https://github.com/deep-blue-zero/gpt-image-workbench/releases/latest).
+Python and dependencies are included; no terminal commands are needed.
+
+1. Run the file ending in `-setup.exe` and open **GPT Image Workbench** from Start.
+2. The launcher opens the interface in your browser. Open **Connect OpenAI / API-key settings**.
+3. Paste your own API key and click **Save API key**. Remember stores it in Windows
+   Credential Manager for this library; uncheck it for session-only use.
+4. Optionally **Test connection**. This reads the models endpoint and does not generate an image.
+5. Choose settings, preview the estimated cost, and confirm before generating.
+
+You can explore without a key. API billing is separate from a ChatGPT subscription.
+Keep the launcher open and use **Quit Workbench** when finished. It waits for an
+active request to save its result and cancels remaining local requests.
+
+Alternatively, extract the complete **portable ZIP** to a writable folder and
+double-click `GPTImageWorkbench.exe`. Keep `_internal` and `portable.flag` with it.
+
+The initial Windows packages are **unsigned**; Windows may show an unknown-publisher
+or SmartScreen warning. Release checksums are provided in `SHA256SUMS.txt`.
+See [Windows installation, updates, and releases](docs/WINDOWS_DISTRIBUTION.md).
+
+## Run from source on Windows
 
 Requirements: Windows 10/11, Python 3.12 with the `py` launcher, and a browser.
 Installation downloads Python dependencies. Paid image requests additionally
@@ -51,7 +74,7 @@ from `.env.example` only if `.env` does not already exist. The execution-policy
 option applies only to this invocation.
 
 1. For a free first look, double-click **Start Demo.cmd**.
-2. For paid generation, edit the local `.env` file and set `OPENAI_API_KEY`.
+2. For paid generation, use **Connect OpenAI** in the interface, or set `OPENAI_API_KEY` in `.env`.
 3. Double-click **Start Workbench.cmd** and open
    [http://127.0.0.1:7865](http://127.0.0.1:7865).
 4. Choose settings, preview the estimated cost, and confirm before generating.
@@ -99,7 +122,10 @@ or cloning this repository does not host the application or share an API key.
 Each installation supplies its own local configuration. Public Gradio sharing,
 analytics, and remote fonts/themes are disabled.
 
-Runtime files live under `data/` by default:
+The installer uses `%LOCALAPPDATA%\GPT Image Workbench\data`. Portable and source
+installations use their own `data/` folder by default. **Choose library** in the
+desktop launcher can open an existing folder containing `workbench.sqlite3`.
+Library contents are the same in each distribution:
 
 | Path | Contents |
 | --- | --- |

@@ -6,10 +6,22 @@ OpenAI API account for paid generation.
 
 ## API key and offline mode
 
-Edit `.env` locally and set `OPENAI_API_KEY` to your own key. Alternatively, set
-that environment variable before launching. Environment variables take priority
-over `.env`. Restart after changing credentials. Do not paste keys into prompts.
-The UI shows whether a key is present but does not validate or reveal it.
+Use **Connect OpenAI / API-key settings** at the top of the interface. Paste your
+key into the password field and click **Save API key**. Remember uses Windows
+Credential Manager, scoped to this library; unchecked means this session only.
+The field clears after saving. No restart or image request is required.
+
+**Test connection** makes a read-only models request. Success proves the key was
+accepted for that endpoint; it does not guarantee image-model access or billing.
+Some restricted keys can generate images but cannot list models.
+
+Advanced/source users can still use `OPENAI_API_KEY` or `.env`. On startup the
+environment takes priority over `.env`, and either takes priority over a saved
+Credential Manager key. A key explicitly entered in the UI overrides those for
+the current session. **Disconnect and forget saved key** removes the vault entry
+and disconnects this session; an environment/.env key returns after restarting
+until removed at its source. Changing keys clears prepared request previews and
+is blocked during an active request. Keys are never written into library metadata.
 
 With no key, the entire interface remains available for inspection, prompt
 management, cost previews and offline image samples. Requests are blocked before
@@ -17,7 +29,8 @@ submission. `Start Demo.cmd` forces this mode even when a key exists. The local
 sample is a labeled pixel grid, **not AI-generated artwork**.
 
 Optional `.env` settings are `WORKBENCH_PORT` (default 7865),
-`WORKBENCH_DATA_DIR` (default `data` within this project), and
+`WORKBENCH_DATA_DIR` (source/portable default `data`; installed default
+`%LOCALAPPDATA%\GPT Image Workbench\data`), and
 `WORKBENCH_TIMEZONE` (default `America/New_York`). Command-line options include
 `--demo`, `--no-browser`, `--port 7866`, and `--data-dir PATH`.
 
@@ -35,7 +48,8 @@ Choose exactly one of:
 
 The dated identifiers pin a model snapshot. Undated aliases can change on the
 provider side. **The application never substitutes a model.** Selecting a model
-does not establish your account's access to it. No model discovery call is made.
+does not establish your account's access to it. Model choices come from the local registry;
+the optional connection test does not change that registry.
 Generation is nondeterministic, including with a pinned snapshot; there is no
 documented seed control for these models.
 

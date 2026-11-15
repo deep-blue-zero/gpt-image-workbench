@@ -67,6 +67,7 @@ class Workbench:
         self.lock = threading.RLock()
         self.plans: dict[str, Plan] = {}
         self.job: Job | None = None
+        self.closing = False
         self.batches = BatchService(self, batch_api_factory)
 
     def prepare(self, name: str, runs: list[Run], processing_mode: str = "standard") -> Plan:
@@ -100,9 +101,12 @@ class Workbench:
             raise ValueError("Review the request preview and explicitly confirm the estimated API cost.")
         if not self.config.api_key:
             raise ValueError(
-                "Demo mode: no API request was sent. Configure OPENAI_API_KEY in .env and restart in normal mode."
+                "Demo mode: no API request was sent. Connect an API key using Connect OpenAI above. "
+                "If launched with --demo, restart in normal mode first."
             )
         with self.lock:
+            if self.closing:
+                raise ValueError("Workbench is shutting down. No new requests can be submitted.")
             if self.job and self.job.finished is None:
                 raise ValueError(
                     "An experiment is already running. Wait or cancel its remaining queued requests."
@@ -386,5 +390,19 @@ class Workbench:
         )
 
     def close(self) -> None:
+        with self.lock:
+            self.closing = True
         self.cancel()
         self.executor.shutdown(wait=True, cancel_futures=False)
+
+    def change_credentials(self, key: str | None, remember: bool = False) -> None:
+        with self.lock, self.batches.lock:
+            if self.closing or (self.job and self.job.finished is None):
+                raise ValueError("Wait for the active request to finish before changing API keys.")
+            if self.config.demo:
+                raise ValueError("This launch has API access disabled. Restart without --demo to connect.")
+            if key is None:
+                self.config.credentials.disconnect()
+            else:
+                self.config.credentials.set(key, remember)
+            self.plans.clear()

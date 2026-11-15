@@ -23,6 +23,7 @@ from app.ui.components import (
     make_spec,
     whole,
 )
+from app.ui.connection import build_connection, connection_status
 from app.ui.desktop import show_in_explorer
 from app.ui.views import moderation_view, native_view, plan_rows, plan_summary, usage_dashboard
 
@@ -104,15 +105,8 @@ def build_ui(workbench: Workbench) -> gr.Blocks:
             '<div class="workbench-header"><span class="eyebrow">Local image studio · experiments & inspection</span>'
             "<h1>GPT Image Workbench</h1><p>Generate, edit, compare, and inspect original pixels.</p></div>"
         )
-        connection = (
-            "API key detected. Requests are sent only after preview and confirmation."
-            if workbench.config.api_key
-            else (
-                "**Offline / demo mode.** Explore every tab, plan experiments, and create a local inspection sample. "
-                "Set OPENAI_API_KEY in .env and restart to generate with OpenAI."
-            )
-        )
-        gr.Markdown(connection)
+        connection = build_connection(workbench)
+        demo.load(lambda: connection_status(workbench), outputs=connection, api_visibility="private")
         processing_mode = gr.Radio(
             [
                 ("Standard — immediate requests", "standard"),
@@ -982,8 +976,8 @@ def build_ui(workbench: Workbench) -> gr.Blocks:
                 apply_default = gr.Button("Apply saved moderation default to both current forms")
                 settings_notice = gr.Markdown()
                 gr.Markdown(
-                    f"Data folder: `{workbench.config.data_dir}`\n\nCredentials: `OPENAI_API_KEY` from environment or `.env`; "
-                    "restart after changing credentials. Keys are not entered through this UI or saved in records.\n\n"
+                    f"Data folder: `{workbench.config.data_dir}`\n\nUse **Connect OpenAI / API-key settings** above "
+                    "to save or change credentials without restarting. Keys are not saved in library records.\n\n"
                     "Models and prices can be updated independently in `config/capabilities.json` and `config/pricing.json`; restart after editing. "
                     "Registry verification date: **2026-10-30**. The server binds to **127.0.0.1** with sharing and telemetry disabled."
                 )

@@ -17,6 +17,7 @@ private prompts and experiment exports.
 | `app/ui/` | Gradio controls, gallery, cost views, and desktop actions |
 | `app/service.py`, `app/batch.py` | Standard and official Batch orchestration |
 | `tests/` | Offline tests and an explicitly gated paid smoke test |
+| `packaging/windows/`, `scripts/` | Windows launcher packaging, installer, and distribution checks |
 
 ## Verification
 
@@ -49,3 +50,9 @@ Do not enable it as part of normal development or a pull request.
 
 The application is a local desktop tool. Supporting a publicly hosted service
 would require a separate design for authentication, authorization, and storage.
+
+Windows releases are built and tested by the `Windows release` workflow. See
+[distribution instructions](docs/WINDOWS_DISTRIBUTION.md). Runtime dependencies
+remain in `requirements-lock.txt`; packaging-only tools use `requirements-build.txt`.
+Never add a real API key to CI. Credential tests use temporary library identities
+and an isolated Windows Credential Manager namespace.

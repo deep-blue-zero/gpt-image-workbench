@@ -1,5 +1,25 @@
 # Testing and qualification
 
+## Windows desktop release checks — 2026-11-15
+
+- 213 offline tests passed, with the paid live test deselected.
+- Lint, formatting, and dependency checks passed.
+- Both the frozen portable executable and installed executable launched with
+  Python absent from the child process PATH, using the bundled interpreter.
+- The package probes exercised Tk, Windows Credential Manager with disposable
+  fake credentials, the HTTP UI, shipped model registries, and local image storage.
+- Reinstall preserved original sample image bytes and saved settings; uninstall
+  preserved the library. The test installer uses an isolated application registration.
+- Browser testing verified session-only API-key entry, field clearing, and
+  disconnect without restarting. No live OpenAI request was submitted.
+
+The release workflow repeats the offline tests and packaged checks on a fresh
+Windows runner before uploading the installer and ZIP. The startup probe also
+fetches the packaged frontend JavaScript and CSS. These checks do not establish
+provider model access or billing behavior. Packages are initially unsigned.
+
+See [Windows distribution](WINDOWS_DISTRIBUTION.md) for building and publishing.
+
 ## Initial public release checks — 2026-11-14
 
 The full offline suite passed on Windows with Python 3.12:

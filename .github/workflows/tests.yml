@@ -37,9 +37,9 @@ jobs:
       - name: Check dependencies
         run: python -m pip check
       - name: Lint
-        run: python -m ruff check app tests
+        run: python -m ruff check app tests scripts
       - name: Check formatting
-        run: python -m ruff format --check app tests
+        run: python -m ruff format --check app tests scripts
       - name: Run offline tests
         run: python -m pytest -q -m "not live"
       - name: Build wheel
