@@ -1,0 +1,26 @@
+{
+  "version": "2026-11-05-image-2.6-standard",
+  "currency": "USD",
+  "verified_on": "2026-11-05",
+  "source": "https://developers.openai.com/api/docs/pricing",
+  "calculator_source": "https://developers.openai.com/api/docs/guides/image-generation",
+  "calculator_asset": "https://developers.openai.com/_astro/GptImageTokenCalculator.react.DcSj7WaD.js",
+  "rates_per_million": {
+    "gpt-image-2.6": {"text_input": 5.0, "image_input": 8.0, "image_output": 30.0},
+    "gpt-image-2.5": {"text_input": 5.0, "image_input": 8.0, "image_output": 30.0},
+    "gpt-image-2": {"text_input": 5.0, "image_input": 8.0, "image_output": 30.0}
+  },
+  "batch_rates_per_million": {
+    "gpt-image-2.5": {"text_input": 2.5, "image_input": 4.0, "image_output": 15.0}
+  },
+  "output_grid": {
+    "gpt-image-2.6": {"low": 16, "medium": 24, "high": 48, "xhigh": 64, "max": 96},
+    "gpt-image-2.5": {"low": 16, "medium": 24, "high": 48, "xhigh": 64, "max": 96},
+    "gpt-image-2": {"low": 16, "medium": 48, "high": 96}
+  },
+  "output_token_multipliers": {
+    "gpt-image-2.6": {"low": 4.2, "medium": 3.3, "high": 1, "xhigh": 1, "max": 1}
+  },
+  "partial_image_output_tokens": 100,
+  "notes": "Standard and official Batch use separate token rates. No cached-input discount is assumed. Input allowances are application assumptions, not official token counts. Usage-derived cost is not an invoice."
+}

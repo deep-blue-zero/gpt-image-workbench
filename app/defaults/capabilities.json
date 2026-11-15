@@ -1,0 +1,46 @@
+{
+  "verified_on": "2026-11-05",
+  "sources": [
+    "https://developers.openai.com/api/docs/guides/image-generation",
+    "https://developers.openai.com/api/reference/resources/images/methods/generate",
+    "https://developers.openai.com/api/reference/resources/images/methods/edit"
+  ],
+  "families": {
+    "gpt-image-2.5": {
+      "qualities": ["auto", "low", "medium", "high", "xhigh", "max"],
+      "complexities": [],
+      "formats": ["png", "jpeg", "webp"],
+      "backgrounds": ["auto", "opaque", "transparent"],
+      "endpoints": ["generate", "edit"],
+      "batch_endpoints": ["generate", "edit"],
+      "moderation": {"generate": ["auto", "low"], "edit": ["auto", "low"]},
+      "compression_formats": ["jpeg", "webp"],
+      "streaming": ["generate", "edit"],
+      "max_images": 10,
+      "max_references": 16,
+      "max_reference_bytes": 50000000,
+      "max_prompt_chars": 32000,
+      "resolution": {"multiple": 16, "max_edge": 3840, "min_pixels": 655360, "max_pixels": 8294400, "max_ratio": 3, "experimental_pixels": 3686400},
+      "seed_parameter": null
+    },
+    "gpt-image-2.6": {
+      "extends": "gpt-image-2.5",
+      "complexities": ["low", "medium", "high"],
+      "batch_endpoints": []
+    },
+    "gpt-image-2": {
+      "extends": "gpt-image-2.5",
+      "batch_endpoints": [],
+      "qualities": ["auto", "low", "medium", "high"]
+    }
+  },
+  "models": {
+    "gpt-image-2.5-sunburst": {"family": "gpt-image-2.5", "description": "Strong image generation and precise editing.", "snapshot": null},
+    "gpt-image-2.5-flare": {"family": "gpt-image-2.5", "description": "Fast, high-quality everyday image generation.", "snapshot": null},
+    "gpt-image-2.6-sunburst": {"family": "gpt-image-2.6", "description": "GPT Image 2.6 for detailed visual work and editing. Complexity defaults to high. Workbench support: PNG/JPEG/WebP, Standard processing only.", "snapshot": null},
+    "gpt-image-2.6-flare": {"family": "gpt-image-2.6", "description": "GPT Image 2.6 for fast iteration and editing. Complexity defaults to high. Workbench support: PNG/JPEG/WebP, Standard processing only.", "snapshot": null},
+    "gpt-image-2": {"family": "gpt-image-2", "description": "Previous generation; quality up to high. Transparency is in preview.", "snapshot": null},
+    "gpt-image-2.5-sunburst-2026-09-08": {"family": "gpt-image-2.5", "description": "Sunburst, pinned September 8, 2026 snapshot.", "snapshot": "2026-09-08"},
+    "gpt-image-2.5-flare-2026-09-08": {"family": "gpt-image-2.5", "description": "Flare, pinned September 8, 2026 snapshot.", "snapshot": "2026-09-08"}
+  }
+}

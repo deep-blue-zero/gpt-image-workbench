@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpt-image-workbench"
+version = "0.1.0"
+description = "Local GPT Image generation, editing, and experiment workbench"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = [
+  "gradio>=6.31,<7", "openai>=2.54,<3", "Pillow>=12.3,<13",
+  "python-dotenv>=1.2,<2", "httpx>=0.28,<1", "tzdata>=2026.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9,<10", "ruff>=0.17,<1"]
+
+[project.scripts]
+gpt-image-workbench = "app.main:main"
+
+[project.urls]
+Repository = "https://github.com/deep-blue-zero/gpt-image-workbench"
+Issues = "https://github.com/deep-blue-zero/gpt-image-workbench/issues"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+app = ["defaults/*.json", "ui/*.css", "ui/*.js"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["live: paid API integration; explicit opt-in required"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

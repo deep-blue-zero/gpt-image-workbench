@@ -1,0 +1,33 @@
+.venv/
+.env
+.env.*
+!.env.example
+config/local*.json
+data/
+.validation/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Private development evidence stays local; public summaries are in docs/TESTING.md.
+/docs/VALIDATION.md
+/docs/*_2026-10-31.md
+/docs/API_COMPATIBILITY.md
+/docs/validation/
+
+# Local registry overrides and artifacts from other data-directory choices.
+/config/capabilities.json
+/config/pricing.json
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.log
+*.jsonl
+.coverage
+htmlcov/
