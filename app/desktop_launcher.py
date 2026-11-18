@@ -202,8 +202,12 @@ def self_test(args):
     config = Config(data_dir=args.data_dir, demo=True)
     server = DesktopServer(config, args.port)
     try:
+        from tempfile import TemporaryDirectory
         from uuid import uuid4
 
+        from PIL import Image
+
+        from app.api.payload import reference_file_part
         from app.credentials import WindowsCredentialStore
 
         vault = WindowsCredentialStore(config.data_dir)
@@ -226,6 +230,14 @@ def self_test(args):
         identity = server.workbench.demo_image()
         image_path = server.workbench.repo.image_path(identity)
         assert image_path.is_file()
+        # Exercise the WebP codec in the frozen runtime and its stored edit reference.
+        with TemporaryDirectory() as folder:
+            webp = Path(folder) / "sample.webp"
+            Image.new("RGB", (16, 16), "navy").save(webp, "WEBP")
+            (reference,) = server.workbench.import_references([str(webp)], "gpt-image-2.6-sunburst")
+            with server.workbench.repo.image_path(reference).open("rb") as source:
+                _, content, media_type = reference_file_part(source)
+                assert media_type == "image/webp" and content.read() == webp.read_bytes()
         assert config.api_key is None
         assert any(c.get("props", {}).get("label") == "OpenAI API key" for c in ui["components"])
         result = {
@@ -237,6 +249,7 @@ def self_test(args):
             "components": len(ui["components"]),
             "tk": tk.TkVersion,
             "credential_manager": "passed",
+            "webp_reference": "passed",
             "frontend_assets": len(assets),
         }
     finally:

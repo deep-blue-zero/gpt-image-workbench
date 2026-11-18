@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — 2026-11-17
+
+- Fix WebP references rejected by Edit/Image to Image on Windows with
+  `unsupported_file_mimetype`. Standard edits and Batch reference uploads now
+  send the detected PNG, JPEG, or WebP type explicitly, preserving the original
+  bytes and reference order. Existing library images work after updating.
+
 ## 0.2.0 — 2026-11-15
 
 - Add a bundled Windows x64 installer and portable ZIP, with a graphical launcher.

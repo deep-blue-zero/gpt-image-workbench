@@ -12,7 +12,7 @@ import httpx
 from openai import OpenAI
 
 from app.api.errors import WorkbenchError, classify_error, provider_error_body, provider_error_fields
-from app.api.payload import build_payload
+from app.api.payload import build_payload, reference_file_part
 from app.config import Settings
 from app.models.capabilities import Registry
 from app.models.spec import GenerationSpec
@@ -72,7 +72,10 @@ class ImageAPI:
                         kwargs["extra_body"] = extra_body
                     if spec.operation == "edit":
                         try:
-                            kwargs["image"] = [stack.enter_context(p.open("rb")) for p in reference_paths]
+                            kwargs["image"] = [
+                                reference_file_part(stack.enter_context(path.open("rb")))
+                                for path in reference_paths
+                            ]
                         except OSError as exc:
                             raise WorkbenchError(
                                 "filesystem",

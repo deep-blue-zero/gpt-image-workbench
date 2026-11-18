@@ -5,6 +5,8 @@ from __future__ import annotations
 import httpx
 from openai import OpenAI
 
+from app.api.payload import reference_file_part
+
 
 class BatchAPI:
     def __init__(self, api_key, settings, client=None):
@@ -23,7 +25,7 @@ class BatchAPI:
     def upload(self, path, purpose):
         with path.open("rb") as source:
             result = self.client.files.create(
-                file=source,
+                file=reference_file_part(source) if purpose == "vision" else source,
                 purpose=purpose,
                 expires_after={"anchor": "created_at", "seconds": 2592000},
             )

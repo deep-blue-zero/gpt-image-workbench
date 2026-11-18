@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import json
+import mimetypes
 import threading
+from email import policy
+from email.parser import BytesParser
 
 import httpx
 import pytest
 from openai import OpenAI
+from PIL import Image
 
+from app.api.batch import BatchAPI
 from app.api.client import ImageAPI
 from app.api.errors import WorkbenchError
 from app.config import Settings
@@ -19,6 +24,56 @@ def sdk(handler):
         max_retries=0,
         http_client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
+
+
+@pytest.mark.parametrize("batch", [False, True], ids=["standard-edit", "batch-vision-upload"])
+def test_edit_references_send_verified_image_types(registry, repo, tmp_path, monkeypatch, batch):
+    expected, paths, ids = [], [], []
+    for i, (suffix, fmt, mime) in enumerate(
+        [
+            ("png", "PNG", "image/png"),
+            ("jpg", "WEBP", "image/webp"),
+            ("jpg", "JPEG", "image/jpeg"),
+            ("webp", "WEBP", "image/webp"),
+        ]
+    ):
+        # Include a misnamed input: the library detects the format from its bytes.
+        original = tmp_path / f"original-{i}.{suffix}"
+        Image.new("RGB", (12, 10), (i * 60, 40, 20)).save(original, format=fmt)
+        raw = original.read_bytes()
+        identity = repo.import_image(original, raw)
+        stored = repo.image_path(identity)
+        paths.append(stored)
+        ids.append(identity)
+        expected.append((stored.name, mime, raw))
+
+    # Reproduce a system with no registered image MIME types, even on other hosts.
+    monkeypatch.setattr(mimetypes, "guess_type", lambda *args, **kwargs: (None, None))
+    uploaded = []
+
+    def handler(request):
+        assert request.url.path == ("/v1/files" if batch else "/v1/images/edits")
+        envelope = f"Content-Type: {request.headers['content-type']}\r\n\r\n".encode() + request.read()
+        for part in BytesParser(policy=policy.default).parsebytes(envelope).iter_parts():
+            if part.get_filename():
+                name = part.get_param("name", header="content-disposition")
+                assert name == ("file" if batch else "image[]")
+                uploaded.append((part.get_filename(), part.get_content_type(), part.get_payload(decode=True)))
+        return httpx.Response(200, json={"id": "file-test"} if batch else {"data": []})
+
+    with sdk(handler) as client:
+        if batch:
+            api = BatchAPI("unused", Settings(), client)
+            for path in paths:
+                assert api.upload(path, "vision") == "file-test"
+        else:
+            spec = GenerationSpec(
+                operation="edit", prompt="Keep the reference order.", reference_ids=tuple(ids)
+            )
+            ImageAPI("unused", registry, Settings(), client).run(
+                spec, paths, threading.Event(), lambda _: None, lambda _: None
+            )
+    assert uploaded == expected
 
 
 @pytest.mark.parametrize("moderation", ["auto", "low"])

@@ -112,6 +112,8 @@ def main():
                     "status": "passed",
                     "portable": portable_result["status"],
                     "installed": result["status"],
+                    "portable_webp_reference": portable_result["webp_reference"],
+                    "installed_webp_reference": result["webp_reference"],
                     "upgrade_preserved_library": True,
                     "uninstall_preserved_library": True,
                     "python_on_child_path": False,

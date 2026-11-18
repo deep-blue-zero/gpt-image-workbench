@@ -1,12 +1,10 @@
-Windows x64 distribution with Python and dependencies included.
+GPT Image Workbench 0.2.1 fixes WebP reference uploads in **Edit/Image to Image**.
+On some Windows systems, version 0.2.0 uploaded a still WebP as
+`application/octet-stream`, and OpenAI rejected it with `unsupported_file_mimetype`.
+Standard edits and Batch reference uploads now send the correct image type.
+You can reuse WebP images already in your library in their original format.
 
-- **Installer:** download the file ending in `-setup.exe`, install, and open GPT Image Workbench from Start.
-- **Portable:** extract the complete `-portable.zip` into a writable folder and open `GPTImageWorkbench.exe`.
-- Paste your own API key into **Connect OpenAI / API-key settings**. Remember saves it in Windows Credential Manager; session-only use is also available.
-- Explore without an API key. Saving a key never submits an image request. Paid generation requires a cost preview and confirmation.
-- The launcher reopens the browser, selects an existing library, and waits for active requests to save when quitting.
-- Installer libraries live separately under `%LOCALAPPDATA%\GPT Image Workbench\data`; portable libraries default to the extracted `data` folder. Upgrades and uninstall preserve libraries.
+- For an installed copy, quit Workbench and run the new `-setup.exe`. Open GPT Image Workbench from Start to use your existing library.
+- For a portable copy, extract the complete `-portable.zip` to a fresh folder, open `GPTImageWorkbench.exe`, and use **Choose library** to select your existing `data` folder.
 
-The initial Windows packages are **unsigned**. Windows may show an unknown-publisher or SmartScreen warning. SHA-256 checksums are in `SHA256SUMS.txt`; download only from this repository's Releases page.
-
-These are Windows x64 builds. Other operating systems and native ARM64 packages are not qualified. Packaging checks are offline and do not submit paid API requests.
+Both Windows x64 downloads include Python and are **unsigned**. Windows may show a SmartScreen or unknown-publisher warning. SHA-256 checksums are in `SHA256SUMS.txt`.

@@ -1,7 +1,21 @@
-from typing import Any
+from pathlib import Path
+from typing import Any, BinaryIO
 
+from app.api.errors import WorkbenchError
 from app.models.capabilities import Registry
 from app.models.spec import GenerationSpec
+
+_IMAGE_MEDIA_TYPES = {".png": "image/png", ".jpeg": "image/jpeg", ".jpg": "image/jpeg", ".webp": "image/webp"}
+
+
+def reference_file_part(source: BinaryIO) -> tuple[str, BinaryIO, str]:
+    # Repository filenames use the format detected from the image bytes at import.
+    # HTTPX otherwise guesses from the host MIME table, which can omit WebP on Windows.
+    path = Path(source.name)
+    media_type = _IMAGE_MEDIA_TYPES.get(path.suffix.lower())
+    if media_type is None:
+        raise WorkbenchError("parameters", "The saved reference must be a PNG, JPEG, or WebP image.")
+    return path.name, source, media_type
 
 
 def build_payload(spec: GenerationSpec, registry: Registry) -> dict[str, Any]:

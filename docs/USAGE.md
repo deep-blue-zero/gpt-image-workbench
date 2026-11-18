@@ -151,8 +151,11 @@ files with their × button, or clear the list to start again. The first is the
 parent image; every reference ID is retained.
 
 Enter an edit instruction, choose the model and controls, preview, and explicitly
-confirm. The API receives the actual original image bytes through the edit
-endpoint. Source files are copied into local storage without replacing originals.
+confirm. The Workbench uploads the original bytes and identifies each reference
+as PNG, JPEG, or WebP from its detected format. If an older Windows build reports
+`unsupported_file_mimetype` for a still WebP, update to 0.2.1 or later, reopen
+the Workbench, and use the same reference. Source files are copied into local
+storage without replacing originals.
 Edited outputs are new files linked to their parent. Compare references and
 outputs in Edit's overviews or Gallery's side-by-side viewer. Generative editing
 is not guaranteed deterministic upscaling.
