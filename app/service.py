@@ -389,6 +389,22 @@ class Workbench:
             out.getvalue(), kind="demo", metadata={"demo": True, "note": "Local test pattern; not AI output."}
         )
 
+    def begin_restart(self) -> None:
+        with self.lock:
+            if self.closing:
+                raise ValueError("Workbench is already shutting down. Wait for it to reopen.")
+            if self.job and self.job.finished is None:
+                raise ValueError(
+                    "An image request or queue is active. Let it finish, then try Restart again."
+                )
+            if not self.batches.lock.acquire(blocking=False):
+                raise ValueError("A Batch operation is in progress. Let it finish, then try Restart again.")
+            try:
+                # Both submission paths must see closing before either lock is released.
+                self.closing = True
+            finally:
+                self.batches.lock.release()
+
     def close(self) -> None:
         with self.lock:
             self.closing = True

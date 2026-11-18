@@ -5,8 +5,7 @@ import os
 import sys
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()
-    # Uvicorn and dependencies expect streams even in a Windows GUI executable.
+    # Uvicorn needs streams in both the launcher and its spawned GUI worker.
     if sys.stdout is None:
         sys.stdout = open(os.devnull, "w", encoding="utf-8")
     if sys.stderr is None:
@@ -18,8 +17,9 @@ if __name__ == "__main__":
         import ctypes
 
         ctypes.windll.kernel32.CreateMutexW.restype = ctypes.c_void_p
-        # The installer checks this mutex instead of terminating a running paid request.
+        # Keep the installer out until both the supervisor and the saving worker exit.
         _installer_mutex = ctypes.windll.kernel32.CreateMutexW(None, False, "Local\\GPTImageWorkbench")
+    multiprocessing.freeze_support()
     from app.desktop_launcher import main
 
     main()

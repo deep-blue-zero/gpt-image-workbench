@@ -81,7 +81,8 @@ option applies only to this invocation.
 
 Keep the launcher running while using the app. Before stopping it, let the active
 request finish so its output can be saved. Closing the browser does not stop a
-request. Restart the app after changing credentials.
+request. After editing `.env` or updating the source, use **Settings → Restart
+Workbench**. The current tab reconnects to the same address and library.
 
 The tested dependency set is in [requirements-lock.txt](requirements-lock.txt).
 See the [usage guide](docs/USAGE.md) for detailed workflows and runtime options.

@@ -19,8 +19,10 @@ installation remains supported. Other OS/CPU packages are deferred.
   libraries without copying or rewriting their images. Credentials are scoped to
   the selected library path. Moving a library requires reconnecting its key.
 - A missing selected library produces an error instead of silently making a new one.
-- A duplicate launch opens the existing browser instance when it is a managed
-  desktop instance. A source CLI instance must be closed before desktop startup.
+- Launching the desktop app again opens the existing browser instance for that library.
+  If the owner is a source checkout older than 0.2.2, close it before opening the desktop app.
+- **Settings → Restart Workbench** reopens the current tab on the same port and
+  library. Images, saved settings, and remembered API keys survive a restart.
 - Closing the browser leaves the application running. Quit using the launcher;
   an in-flight call finishes and saves its result before exit. Remote Batch jobs
   continue at OpenAI after the desktop app closes.
@@ -59,7 +61,8 @@ development receipts are excluded. Third-party license files accompany the runti
 
 The package smoke test launches both distributions with Python removed from the
 child process PATH. It checks the embedded interpreter, Tk, Credential Manager,
-HTTP UI, local image storage, upgrade preservation, and uninstall preservation.
+HTTP UI, restart into a fresh process on the same port, local image storage,
+upgrade preservation, and uninstall preservation.
 All sample images are generated locally; no API key or paid request is used.
 
 ## Automated GitHub Releases

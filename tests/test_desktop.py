@@ -6,12 +6,15 @@ import time
 from types import SimpleNamespace
 
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 from app.config import Config
 from app.desktop_launcher import save_library, saved_library
 from app.desktop_server import AlreadyRunning, DesktopServer, available_port, existing_url
 from app.paths import application_root, default_data_dir
-from app.service import Workbench
+from app.service import Job, Workbench
+from scripts.smoke_windows import check_restart
 
 
 def test_installed_and_portable_defaults_ignore_working_directory(tmp_path, monkeypatch):
@@ -75,6 +78,45 @@ def test_desktop_reopens_same_library_and_releases_lock(config):
     finally:
         server.stop()
     assert not (config.data_dir / ".desktop-instance.json").exists()
+
+
+def test_source_restart_reloads_saved_settings_in_new_process(tmp_path):
+    check_restart([sys.executable, "-m", "app.main"], tmp_path / "restart library")
+
+
+def test_restart_requires_current_local_tab_and_idle_workbench(config):
+    server = DesktopServer(config)
+    server.workbench = Workbench(config)
+    server.url = "http://127.0.0.1:17899"
+    server.ui = SimpleNamespace(app=FastAPI())
+    server.register_lifecycle_routes()
+    client = TestClient(server.ui.app, base_url=server.url)
+    headers = {"Origin": server.url, "X-Workbench-Instance": server.instance}
+    url = "/workbench/restart"
+    try:
+        assert client.get(url).status_code == 405
+        assert client.post(url, headers={"X-Workbench-Instance": server.instance}).status_code == 403
+        assert client.post(url, headers={**headers, "Origin": "https://example.org"}).status_code == 403
+        assert client.post(url, headers={**headers, "Host": "example.org"}).status_code == 403
+        assert client.post(url, headers={**headers, "X-Workbench-Instance": "old"}).status_code == 409
+        server.workbench.job = Job("in-progress", 3)
+        busy = client.post(url, headers=headers)
+        assert busy.status_code == 409 and "queue" in busy.json()["detail"]
+        assert not server.workbench.job.cancel.is_set()
+        server.workbench.job.finished = time.monotonic()
+        # TestClient dispatches the HTTP handler on a different thread than the lock owner.
+        with server.workbench.batches.lock:
+            busy = client.post(url, headers=headers)
+            assert busy.status_code == 409 and "Batch" in busy.json()["detail"]
+        assert not server.restart_requested.is_set() and not server.workbench.closing
+        assert client.post(url, headers=headers).status_code == 202
+        assert server.restart_requested.is_set() and server.workbench.closing
+        assert client.post(url, headers=headers).status_code == 409
+        with pytest.raises(ValueError, match="shutting down"):
+            server.workbench.batches._api()
+    finally:
+        client.close()
+        server.workbench.close()
 
 
 def test_shutdown_waits_for_worker_to_save(config):

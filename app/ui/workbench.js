@@ -4,6 +4,51 @@
     if (document.documentElement.dataset.promptImageDrops === "ready") return;
     document.documentElement.dataset.promptImageDrops = "ready";
 
+    let restarting = false;
+    document.addEventListener("click", async (event) => {
+        const button = event.target instanceof Element && event.target.closest("#restart-workbench");
+        if (!button || restarting) return;
+        const status = document.querySelector("[data-restart-instance]");
+        if (!status || !window.confirm("Restart Workbench? Unsaved form entries and session-only API keys will be cleared.")) return;
+        const instance = status.dataset.restartInstance;
+        restarting = true;
+        button.disabled = true;
+        status.textContent = "Requesting restart…";
+        try {
+            const response = await fetch("/workbench/restart", {
+                method: "POST",
+                headers: { "X-Workbench-Instance": instance },
+                signal: AbortSignal.timeout(5000),
+            });
+            if (!response.ok) {
+                const details = await response.json().catch(() => ({}));
+                status.textContent = details.detail || "Workbench could not restart. Try again.";
+                button.disabled = false;
+                restarting = false;
+                return;
+            }
+        } catch {
+            // The server can disconnect just after accepting the request. Check before retrying.
+        }
+        status.textContent = "Restarting Workbench… This tab will reconnect automatically.";
+        const deadline = Date.now() + 120000;
+        while (Date.now() < deadline) {
+            await new Promise(resolve => setTimeout(resolve, 800));
+            try {
+                const response = await fetch("/workbench/instance", {
+                    cache: "no-store", signal: AbortSignal.timeout(2000),
+                });
+                if (response.ok && (await response.json()).restarted_from === instance) {
+                    window.location.reload();
+                    return;
+                }
+            } catch { /* Expected while the server is restarting. */ }
+        }
+        status.textContent = "Couldn’t reconnect. Check the launcher or terminal, then reload this tab.";
+        button.disabled = false;
+        restarting = false;
+    });
+
     const promptTarget = (event) => event.target instanceof Element
         ? event.target.closest(".prompt-image-drop") : null;
     const referenceTarget = (event) => event.target instanceof Element

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 — 2026-11-17
+
+- Add **Settings → Restart Workbench** to source, installed, and portable launches.
+  The current tab reconnects to the same library and port after a fresh server starts.
+  Active local queues and Batch operations must finish first.
+
 ## 0.2.1 — 2026-11-17
 
 - Fix WebP references rejected by Edit/Image to Image on Windows with

@@ -16,6 +16,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from app.config import Config
 from app.desktop_server import AlreadyRunning, DesktopServer
+from app.lifecycle import supervise
 from app.paths import application_root, desktop_home
 
 
@@ -43,8 +44,11 @@ def save_library(root: Path, library: Path):
 
 
 class Launcher:
-    def __init__(self, args):
+    def __init__(self, args, stopping=None):
         self.args = args
+        self.stopping = stopping
+        self.restarted_from = getattr(args, "restarted_from", None)
+        self.restart_result = None
         self.root_path = application_root()
         self.server = None
         self.busy = False
@@ -108,7 +112,8 @@ class Launcher:
 
     def start(self, library):
         config = Config(root=self.root_path, data_dir=library, demo=self.args.demo)
-        self.server = DesktopServer(config, self.args.port)
+        self.server = DesktopServer(config, self.args.port, restarted_from=self.restarted_from)
+        self.restarted_from = None
         self.library.set(f"Library: {config.data_dir}")
         self.background(self.server.start, "ready")
 
@@ -125,7 +130,7 @@ class Launcher:
                     "Running. Keep this launcher open. Closing the browser does not stop requests."
                 )
                 self.open_button.config(state="normal")
-                if not self.args.no_browser:
+                if not self.args.no_browser and not self.server.restarted_from:
                     self.open_browser()
             elif event == "existing":
                 if value.url:
@@ -133,13 +138,23 @@ class Launcher:
                     self.window.destroy()
                     return
                 self.status.set(str(value))
-            elif event == "quit":
+            elif event in ("quit", "restart"):
+                if event == "restart":
+                    self.restart_result = self.server.restart_target()
                 self.window.destroy()
                 return
             elif event == "switch":
                 self.start(self.next_library)
             else:
                 self.status.set(value)
+        if not self.busy:
+            if self.stopping and self.stopping():
+                self.open_button.config(state="disabled")
+                self.background(self.server.stop if self.server else lambda: None, "quit")
+            elif self.server and self.server.restart_requested.is_set():
+                self.status.set("Restarting Workbench… Your browser will reconnect.")
+                self.open_button.config(state="disabled")
+                self.background(self.server.stop, "restart")
         self.window.after(150, self.poll)
 
     def open_browser(self):
@@ -157,7 +172,7 @@ class Launcher:
                 )
                 return
         folder = filedialog.askdirectory(title="Choose the library folder (containing workbench.sqlite3)")
-        if not folder:
+        if not folder or self.busy or (self.server and self.server.restart_requested.is_set()):
             return
         self.next_library = Path(folder)
         try:
@@ -259,6 +274,16 @@ def self_test(args):
     args.self_test.write_text(json.dumps(result, indent=2), "utf-8")
 
 
+def _serve(args, stopping):
+    launcher = Launcher(args, stopping)
+    try:
+        launcher.window.mainloop()
+        return launcher.restart_result
+    finally:
+        if launcher.server:
+            launcher.server.stop()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--demo", action="store_true")
@@ -281,7 +306,7 @@ def main():
             )
             raise SystemExit(1) from None
     else:
-        Launcher(args).window.mainloop()
+        supervise(_serve, args)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,9 @@
-GPT Image Workbench 0.2.1 fixes WebP reference uploads in **Edit/Image to Image**.
-On some Windows systems, version 0.2.0 uploaded a still WebP as
-`application/octet-stream`, and OpenAI rejected it with `unsupported_file_mimetype`.
-Standard edits and Batch reference uploads now send the correct image type.
-You can reuse WebP images already in your library in their original format.
+Use **Settings → Restart Workbench** to restart the application and reconnect the
+current browser tab to the same address and library. Save any draft prompts first.
+Session-only API keys clear on restart. Saved settings, images, and credentials persist.
+
+If an image queue or a local Batch operation is active, Workbench lets you know
+when to retry. Batch jobs already submitted to OpenAI keep running.
 
 - For an installed copy, quit Workbench and run the new `-setup.exe`. Open GPT Image Workbench from Start to use your existing library.
 - For a portable copy, extract the complete `-portable.zip` to a fresh folder, open `GPTImageWorkbench.exe`, and use **Choose library** to select your existing `data` folder.

@@ -403,6 +403,12 @@ and imports. Batch creation interrupted before its response is retained as an
 unknown submission requiring recovery, not automatic replay.
 Back up the entire `data` folder while the application is stopped.
 
+Use **Settings → Restart Workbench** to reload the server and reopen the current
+tab on the same port and library. Save draft prompts and settings first.
+Restart clears session-only API keys and pending cost previews. If a local queue,
+Batch submission, status check, or result import is active, let it finish and
+press Restart again. Jobs already running at OpenAI continue.
+
 ```text
 app/api/          SDK adapter, payload construction, error classification
 app/models/       immutable generation settings and capability validation
@@ -502,7 +508,8 @@ reuse a different model's output-token formula without official evidence.
 - **Batch result missing or import failed:** inspect Batch details and the saved
   provider errors. Retry import after resolving local storage problems. Do not
   regenerate to repair an import. Unresolved outcomes remain visibly estimated.
-- **UI looks stale after a code update:** stop, restart, then reload the browser.
+- **UI looks stale after a source update:** use **Settings → Restart Workbench**.
+  If your running version predates the button, relaunch it once and refresh the tab.
 - **4K/streaming:** experimental or model/account-dependent behavior must be checked
   live. Current model pages disagree with the detailed guide about streaming;
   this implementation follows the explicit Images API guide and event schemas.

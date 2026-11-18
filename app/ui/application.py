@@ -43,7 +43,7 @@ PLAN_HEADERS = [
 PLAN_WIDTHS = [55, 65, 70, 275, 130, 90, 115, 110, 70, 110, 250]
 
 
-def build_ui(workbench: Workbench) -> gr.Blocks:
+def build_ui(workbench: Workbench, *, instance_id: str | None = None) -> gr.Blocks:
     models = list(workbench.registry.models)
 
     def prompt_choices() -> list[tuple[str, str]]:
@@ -975,6 +975,12 @@ def build_ui(workbench: Workbench) -> gr.Blocks:
                 save_settings = gr.Button("Save persistent settings", variant="primary")
                 apply_default = gr.Button("Apply saved moderation default to both current forms")
                 settings_notice = gr.Markdown()
+                if instance_id:
+                    gr.Button("Restart Workbench", elem_id="restart-workbench")
+                    gr.HTML(
+                        f'<div role="status" aria-live="polite" data-restart-instance="{html.escape(instance_id)}">'
+                        "Reopens this tab with your saved library and settings.</div>"
+                    )
                 gr.Markdown(
                     f"Data folder: `{workbench.config.data_dir}`\n\nUse **Connect OpenAI / API-key settings** above "
                     "to save or change credentials without restarting. Keys are not saved in library records.\n\n"
