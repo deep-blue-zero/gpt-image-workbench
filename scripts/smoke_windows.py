@@ -88,7 +88,9 @@ def check_restart(command, library, env=None):
         if worker_handle is not None:
             try:
                 # The native launcher can still hold its executable after releasing the library.
-                assert _winapi.WaitForSingleObject(worker_handle, 30000) == _winapi.WAIT_OBJECT_0
+                assert _winapi.WaitForSingleObject(worker_handle, 30000) == _winapi.WAIT_OBJECT_0, (
+                    "The replacement server did not exit after its launcher closed."
+                )
             finally:
                 _winapi.CloseHandle(worker_handle)
         deadline = time.monotonic() + 30

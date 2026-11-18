@@ -1,4 +1,5 @@
 import json
+import multiprocessing
 import socket
 import sys
 import threading
@@ -12,6 +13,7 @@ from fastapi.testclient import TestClient
 from app.config import Config
 from app.desktop_launcher import save_library, saved_library
 from app.desktop_server import AlreadyRunning, DesktopServer, available_port, existing_url
+from app.lifecycle import _run
 from app.paths import application_root, default_data_dir
 from app.service import Job, Workbench
 from scripts.smoke_windows import check_restart
@@ -82,6 +84,14 @@ def test_desktop_reopens_same_library_and_releases_lock(config):
 
 def test_source_restart_reloads_saved_settings_in_new_process(tmp_path):
     check_restart([sys.executable, "-m", "app.main"], tmp_path / "restart library")
+
+
+def test_worker_receives_shutdown_after_supervisor_disappears():
+    parent, child = multiprocessing.Pipe()
+    parent.close()
+    signals = []
+    _run(lambda args, stopping: signals.append(stopping()), None, child)
+    assert signals == [True]
 
 
 def test_restart_requires_current_local_tab_and_idle_workbench(config):

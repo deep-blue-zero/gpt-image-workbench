@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import multiprocessing
 from dataclasses import dataclass
+from multiprocessing.connection import wait
 from pathlib import Path
 
 
@@ -18,12 +19,14 @@ def _run(worker, args, control):
     # The supervisor closes its end to request shutdown. A lost parent signals EOF too.
     with control:
         try:
-            result = worker(args, control.poll)
+            # wait() also treats a broken Windows pipe as ready. Tk timer callbacks
+            # must receive a shutdown signal when the launcher disappears.
+            result = worker(args, lambda: bool(wait([control], timeout=0)))
         except KeyboardInterrupt:
             return
         try:
             control.send(result)
-        except (BrokenPipeError, EOFError, OSError):
+        except (EOFError, OSError):
             pass  # The supervisor already exited.
 
 
@@ -38,7 +41,7 @@ def supervise(worker, args):
         target = None
         try:
             with parent:
-                while not parent.poll(0.25):
+                while not wait([parent], timeout=0.25):
                     pass  # A bounded wait lets the launching terminal deliver Ctrl+C on Windows.
                 target = parent.recv()
         except (KeyboardInterrupt, EOFError):
